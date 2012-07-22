@@ -140,13 +140,7 @@ if (typeof Slick === "undefined") {
     var editController;
 
     var rowsCache = {};
-    var rowPositionCache = {
-        0: {
-             top: 0
-            ,height: options.rowHeight
-            ,bottom: options.rowHeight
-        }
-    };
+    var rowPositionCache = {};
     var renderedRows = 0;
     var numVisibleRows;
     var prevScrollTop = 0;
@@ -284,7 +278,7 @@ if (typeof Slick === "undefined") {
         createColumnHeaders();
         setupColumnSort();
         createCssRules();
-        cacheRowPositions();
+        initializeRowPositions();
         resizeCanvas();
         bindAncestorScrollEvents();
 
@@ -889,13 +883,14 @@ if (typeof Slick === "undefined") {
 
     function createCssRules() {
       $style = $("<style type='text/css' rel='stylesheet' />").appendTo($("head"));
+      var rowHeight = (options.rowHeight - cellHeightDiff);
 
       var rules = [
         "." + uid + " .slick-header-column { left: 1000px; }",
         "." + uid + " .slick-top-panel { height:" + options.topPanelHeight + "px; }",
         "." + uid + " .slick-headerrow-columns { height:" + options.headerRowHeight + "px; }",
-        "." + uid + " .slick-cell {}",
-        "." + uid + " .slick-row {}"
+        "." + uid + " .slick-cell { height:" + rowHeight + "px; }",,
+        "." + uid + " .slick-row { height:" + options.rowHeight + "px; }"
       ];
 
       for (var i = 0; i < columns.length; i++) {
@@ -910,9 +905,20 @@ if (typeof Slick === "undefined") {
       }
     }
 
+    function initializeRowPositions() {
+        rowPositionCache = {
+            0: {
+                 top: 0
+                ,height: options.rowHeight
+                ,bottom: options.rowHeight
+            }
+        };
+    }
+
     function cacheRowPositions() {
-console.log( 'cacheRowPositions: ' + getDataLength() );
-        for ( i = 0; i <= getDataLength(); i++ ) {
+        initializeRowPositions();
+
+        for ( var i = 0; i <= getDataLength(); i++ ) {
             var metadata = data.getItemMetadata && data.getItemMetadata(i);
 
             rowPositionCache[i] = {
@@ -1363,15 +1369,17 @@ console.log( 'cacheRowPositions: ' + getDataLength() );
         rowCss += " " + metadata.cssClasses;
       }
 
+      stringArray.push( "<div class='ui-widget-content " );
+      stringArray.push( rowCss );
+      stringArray.push( "' style='top:" );
+      stringArray.push( rowPositionCache[row].top );
+      stringArray.push( "px;" );
       stringArray.push(
-          "<div class='ui-widget-content "
-        + rowCss
-        + "' style='top:"
-        + rowPositionCache[row].top
-        + "px;height:"
-        + rowPositionCache[row].height
-        + "px;'>"
+        ( rowPositionCache[row].height != options.rowHeight )
+        ? "height:" + rowPositionCache[row].height + "px;"
+        : ""
       );
+      stringArray.push( "'>" );
 
       var colspan, m;
       for (var i = 0, ii = columns.length; i < ii; i++) {
@@ -1419,7 +1427,15 @@ console.log( 'cacheRowPositions: ' + getDataLength() );
         }
       }
 
-      stringArray.push("<div class='" + cellCss + "' style='height:" + ( + rowPositionCache[row].height - cellHeightDiff ) + "px;'>");
+      stringArray.push( "<div class='" );
+      stringArray.push( cellCss );
+      stringArray.push( "'" );
+      stringArray.push(
+        ( rowPositionCache[row].height != options.rowHeight )
+        ? "style='height:" + ( rowPositionCache[row].height - cellHeightDiff ) + "px;'"
+        : ""
+      );
+      stringArray.push(  ">" );
 
       // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
       if (d) {
