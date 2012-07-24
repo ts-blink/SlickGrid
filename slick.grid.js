@@ -922,8 +922,12 @@ if (typeof Slick === "undefined") {
             var metadata = data.getItemMetadata && data.getItemMetadata(i);
 
             rowPositionCache[i] = {
-                 top: ( rowPositionCache[i - 1] ) ? ( rowPositionCache[i - 1].bottom - offset ) : 0
-                ,height: ( metadata && metadata.rows[i] ) ? metadata.rows[i].height : options.rowHeight
+                 top: ( rowPositionCache[i - 1] )
+                      ? ( rowPositionCache[i - 1].bottom - offset )
+                      : 0
+                ,height: ( metadata && metadata.hasOwnProperty('rows') && metadata.rows[i] )
+                         ? metadata.rows[i].height
+                         : options.rowHeight
             }
 
             rowPositionCache[i].bottom = rowPositionCache[i].top + rowPositionCache[i].height;
