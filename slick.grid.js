@@ -1637,7 +1637,11 @@ if (typeof Slick === "undefined") {
       }
 
       var oldH = h;
-      th = Math.max(rowPositionCache[getDataLength()].bottom, viewportH - scrollbarDimensions.height);
+      var rowMax = ( options.enableAddRow )
+                   ? rowPositionCache[getDataLength()].bottom
+                   : rowPositionCache[getDataLength()].top;
+
+      th = Math.max(rowMax, viewportH - scrollbarDimensions.height);
 
       if (th < maxSupportedCssHeight) {
         // just one page
