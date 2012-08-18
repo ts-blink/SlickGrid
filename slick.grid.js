@@ -279,6 +279,7 @@ if (typeof Slick === "undefined") {
         setupColumnSort();
         createCssRules();
         initializeRowPositions();
+        cacheRowPositions();
         resizeCanvas();
         bindAncestorScrollEvents();
 
@@ -1560,7 +1561,12 @@ if (typeof Slick === "undefined") {
     function resizeCanvas() {
       if (!initialized) { return; }
       if (options.autoHeight) {
-        viewportH = rowPositionCache[(getDataLength() + (options.enableAddRow ? 1 : 0) + (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0))];
+        viewportH = rowPositionCache[
+            ( getDataLength()
+              + (options.enableAddRow ? 1 : 0)
+              + (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0)
+            )
+        ];
       } else {
         viewportH = getViewportHeight();
       }
@@ -1584,9 +1590,9 @@ if (typeof Slick === "undefined") {
 
       cacheRowPositions();
 
-      numberOfRows = getDataLength() +
-          (options.enableAddRow ? 1 : 0) +
-          (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0);
+      numberOfRows = getDataLength()
+          + (options.enableAddRow ? 1 : 0);
+          + (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0);
 
       var oldViewportHasVScroll = viewportHasVScroll;
       // with autoHeight, we do not need to accommodate the vertical scroll bar
@@ -1646,31 +1652,47 @@ if (typeof Slick === "undefined") {
       updateCanvasWidth(false);
     }
 
-    function getVisibleRange(viewportTop, viewportLeft) {
-      if (viewportTop == null) {
-        viewportTop = scrollTop;
+    function getVisibleRange(top, left) {
+      if (top == null) {
+        top = scrollTop;
       }
-      if (viewportLeft == null) {
-        viewportLeft = scrollLeft;
+      if (left == null) {
+        left = scrollLeft;
       }
 
+      var rowTop = Math.floor( getRowFromPosition( top + offset ) );
+      var rowBottom = Math.ceil( getRowFromPosition( top + offset + viewportH ) );
+
       return {
-        top: Math.floor( getRowFromPosition( viewportTop + offset ) ),
-        bottom: Math.ceil( getRowFromPosition( viewportTop + offset + viewportH ) ),
-        leftPx: viewportLeft,
-        rightPx: viewportLeft + viewportW
+        top: rowTop,
+        bottom: rowBottom,
+        leftPx: left,
+        rightPx: left + viewportW
       };
     }
 
     function getRowFromPosition( maxPosition ) {
         var row = 0;
-        var rowsInPosCache  = $( rowPositionCache ).length;
+        var rowsInPosCache = getDataLength();
 
+        if ( !rowsInPosCache ) {
+            return row;
+        }
+
+        // Loop through the row position cache and break when
+        // the row is found
         for ( var i = 0; i < rowsInPosCache; i++ ) {
-            if ( viewportH > rowPositionCache[i].bottom ) {
-                row = ( maxPosition / rowPositionCache[i].bottom );
+            if ( rowPositionCache[i].top <= maxPosition
+                 && rowPositionCache[i].bottom >= maxPosition
+            ) {
+                row = i;
                 continue;
             }
+        }
+
+        // Return the last row in the grid
+        if ( maxPosition > rowPositionCache[rowsInPosCache-1].bottom ) {
+            row = rowsInPosCache-1;
         }
 
         return row;
@@ -2656,10 +2678,10 @@ if (typeof Slick === "undefined") {
 
     function scrollRowIntoView(row, doPaging) {
       var rowAtTop = rowPositionCache[row].top;
-      var rowAtBottom = rowPositionCache[row + 1].bottom - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0);
+      var rowAtBottom = rowPositionCache[row].bottom - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0);
 
       // need to page down?
-      if (rowPositionCache[row+1].top > scrollTop + viewportH + offset) {
+      if (rowPositionCache[row].bottom > scrollTop + viewportH + offset) {
         scrollTo(doPaging ? rowAtTop : rowAtBottom);
         render();
       }
