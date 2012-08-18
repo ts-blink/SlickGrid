@@ -11,13 +11,12 @@
 <table width="100%">
   <tr>
     <td valign="top" width="50%">
-      <div id="myGrid" style="width:600px;height:350px;"></div>
+      <div id="myGrid" style="width:600px;height:500px;"></div>
     </td>
     <td valign="top">
       <h2>Demonstrates:</h2>
       <ul>
         <li>basic grid with minimal configuration</li>
-		<li><button id='scrollTo'>Scroll To</button></li>
       </ul>
     </td>
   </tr>
@@ -47,7 +46,7 @@
 
   $(function () {
     var data = [];
-    for (var i = 0; i < 50009; i++) {
+    for (var i = 0; i < 500; i++) {
       data[i] = {
         title: "Task " + i,
         duration: "5 days",
@@ -58,33 +57,7 @@
       };
     }
 
-	data.getItemMetadata = function(row) {
-		return {
-			'rows': {
-				1: {
-					'height': 32
-				}
-				,5: {
-					'height': 55
-				}
-				,98: {
-					'height': 100
-				}
-				,400: {
-					'height': 40
-				}
-				,49998: {
-					'height': 100
-				}
-			}
-		};
-	};
-
     grid = new Slick.Grid("#myGrid", data, columns, options);
-
-	$('#scrollTo').click(function(e){
-		grid.scrollRowToTop(100);
-	})
   })
 </script>
 </body>
