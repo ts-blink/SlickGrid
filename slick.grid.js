@@ -811,10 +811,9 @@ if (typeof Slick === "undefined") {
                 var $headerRowTarget = (options.frozenColumn > -1) ? ((i <= options.frozenColumn) ? $headerRowL : $headerRowR) : $headerRowL;
 
                 var header = $("<div class='ui-state-default slick-header-column' />")
-                    .html("<span class='slick-column-name'>" + m.name + "</span>")
+                    .html("<span class='slick-column-name' title='" + m.toolTip + "'>" + m.name + "</span>")
                     .width(m.width - headerColumnWidthDiff)
                     .attr("id", "" + uid + m.id)
-                    .attr("title", m.toolTip || "")
                     .data("column", m)
                     .addClass(m.headerCssClass || "")
                     .appendTo($headerTarget);
@@ -871,7 +870,7 @@ if (typeof Slick === "undefined") {
                     && !$(e.target).hasClass('slick-sort-indicator')) {
                     return;
                 }
-                
+
                 var column = $col.data("column");
                 if (column.sortable) {
                     if (!getEditorLock().commitCurrentEdit()) {
@@ -3052,17 +3051,20 @@ if (typeof Slick === "undefined") {
                 return;
             }
 
+            //https://github.com/JLynch7/SlickGrid/issues/76
             if ((activeCell != cell.cell || activeRow != cell.row) && canCellBeActive(cell.row, cell.cell)) {
                 if (!getEditorLock().isActive() || getEditorLock().commitCurrentEdit()) {
                     if (hasFrozenRows) {
                         if (( !( options.frozenBottom ) && ( cell.row >= actualFrozenRow ) )
                             || ( options.frozenBottom && ( cell.row < actualFrozenRow ) )
-                            ) {
+                        ) {
                             scrollRowIntoView(cell.row, false);
                         }
-
-                        setActiveCellInternal(getCellNode(cell.row, cell.cell));
+                    } else {
+                        scrollRowIntoView(cell.row, false);
                     }
+
+                    setActiveCellInternal(getCellNode(cell.row, cell.cell));
                 }
             }
         }
