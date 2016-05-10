@@ -864,11 +864,14 @@ if (typeof Slick === "undefined") {
                     return;
                 }
 
-                var $col = $(e.target).closest(".slick-header-column");
-                if (!$col.length) {
+                // TODO(Jasmeet): Once we upgrade slickgrid we need to migrate these checks.
+                // This fix is added to prevent sort to happen when user click on the chosen plugin
+                // or on the filter/menu button
+                if (!$(e.target).hasClass('slick-header-column') && !$(e.target).hasClass('slick-column-name')
+                    && !$(e.target).hasClass('slick-sort-indicator')) {
                     return;
                 }
-
+                
                 var column = $col.data("column");
                 if (column.sortable) {
                     if (!getEditorLock().commitCurrentEdit()) {
